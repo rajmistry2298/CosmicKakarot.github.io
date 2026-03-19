@@ -128,14 +128,31 @@ function saveData() {
 }
 
 function addFigure() {
-  const name = document.getElementById("name").value;
-  const anime = document.getElementById("anime").value;
-  const brand = document.getElementById("brand").value;
+  const name = document.getElementById("name").value.trim();
+  const anime = document.getElementById("anime").value.trim();
+  const brand = document.getElementById("brand").value.trim();
   const owned = document.getElementById("owned").value;
   const imageInput = document.getElementById("image");
 
-  if (!name || !anime || !brand || imageInput.files.length === 0) {
-    alert("Please fill everything");
+  if (!name || !anime || !brand) {
+    alert("Please fill figure name, anime name, and brand.");
+    return;
+  }
+
+  // If no image selected, use a placeholder
+  if (imageInput.files.length === 0) {
+    const newFigure = {
+      name,
+      anime,
+      brand,
+      owned,
+      image: "https://via.placeholder.com/300x300?text=No+Image"
+    };
+
+    figures.push(newFigure);
+    saveData();
+    displayFigures(figures);
+    clearInputs();
     return;
   }
 
@@ -152,27 +169,43 @@ function addFigure() {
     figures.push(newFigure);
     saveData();
     displayFigures(figures);
+    clearInputs();
   };
 
   reader.readAsDataURL(imageInput.files[0]);
+}
+
+function clearInputs() {
+  document.getElementById("name").value = "";
+  document.getElementById("anime").value = "";
+  document.getElementById("brand").value = "";
+  document.getElementById("image").value = "";
 }
 
 function displayFigures(data) {
   const gallery = document.getElementById("gallery");
   gallery.innerHTML = "";
 
+  if (data.length === 0) {
+    gallery.innerHTML = "<p style='opacity:0.6'>No figures added yet.</p>";
+    return;
+  }
+
   data.forEach(fig => {
-    gallery.innerHTML += `
-      <div class="card">
-        <img src="${fig.image}" />
-        <h3>${fig.name}</h3>
-        <p>${fig.anime}</p>
-        <p>${fig.brand}</p>
-        <div class="status ${fig.owned === 'yes' ? 'owned' : 'not-owned'}">
-          ${fig.owned === 'yes' ? 'Owned' : 'Not Owned'}
-        </div>
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <img src="${fig.image}" />
+      <h3>${fig.name}</h3>
+      <p>${fig.anime}</p>
+      <p>${fig.brand}</p>
+      <div class="status ${fig.owned === 'yes' ? 'owned' : 'not-owned'}">
+        ${fig.owned === 'yes' ? 'Owned' : 'Not Owned'}
       </div>
     `;
+
+    gallery.appendChild(card);
   });
 }
 
@@ -188,6 +221,7 @@ function searchFigures() {
   displayFigures(filtered);
 }
 
+// Load saved figures when page opens
 displayFigures(figures);
 </script>
 
